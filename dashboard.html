@@ -1,0 +1,21 @@
+{% extends "base.html" %}{% block title %}Dashboard{% endblock %}{% block page_title %}Parking overview{% endblock %}
+{% block content %}
+<div class="welcome-row"><div><h2>Good day, Administrator <span>✦</span></h2><p>Here’s what’s happening at ParkIQ Central right now.</p></div><a class="btn primary" href="{{url_for('entry')}}">＋ Register vehicle</a></div>
+<div class="stat-grid">
+<div class="stat-card"><div class="stat-top"><span>Available spaces</span><span class="stat-icon mint">▤</span></div><strong>{{stats.available}}</strong><small>of {{stats.total}} total slots</small><div class="mini-bar"><i style="width:{{(stats.available/stats.total*100) if stats.total else 0}}%"></i></div></div>
+<div class="stat-card"><div class="stat-top"><span>Occupied spaces</span><span class="stat-icon blue">▣</span></div><strong>{{stats.occupied}}</strong><small>{{((stats.occupied/stats.total*100)|round|int) if stats.total else 0}}% occupancy rate</small><div class="mini-bar bluebar"><i style="width:{{(stats.occupied/stats.total*100) if stats.total else 0}}%"></i></div></div>
+<div class="stat-card"><div class="stat-top"><span>Revenue today</span><span class="stat-icon gold">₹</span></div><strong>₹{{"%.2f"|format(stats.revenue)}}</strong><small>Successful payments today</small></div>
+<div class="stat-card"><div class="stat-top"><span>Active sessions</span><span class="stat-icon violet">◷</span></div><strong>{{stats.active}}</strong><small>{{stats.reserved}} slots reserved</small></div>
+</div>
+<div class="dashboard-grid">
+<section class="panel"><div class="panel-head"><div><h3>Slot availability</h3><p>Live status by vehicle type</p></div><a class="text-link" href="{{url_for('slots')}}">View all slots ↗</a></div>
+{% for row in by_type %}<div class="availability-row"><div class="type-badge {{row.slot_type|lower}}">{% if row.slot_type=='EV' %}ϟ{% elif row.slot_type=='BIKE' %}◉{% else %}▰{% endif %}</div><div class="availability-info"><div class="availability-title"><b>{{row.slot_type}}</b><span>{{row.available}} / {{row.total}} free</span></div><div class="progress"><i class="{{row.slot_type|lower}}" style="width:{{(row.available/row.total*100) if row.total else 0}}%"></i></div></div></div>{% endfor %}
+<div class="legend"><span><i class="dot available"></i>Available</span><span><i class="dot occupied"></i>Occupied</span><span><i class="dot reserved"></i>Reserved</span></div>
+</section>
+<section class="panel"><div class="panel-head"><div><h3>Quick actions</h3><p>Common parking operations</p></div></div><div class="quick-grid"><a href="{{url_for('entry')}}"><span class="quick-icon mint">＋</span><b>Vehicle check-in</b><small>Allocate a free slot</small></a><a href="{{url_for('sessions')}}"><span class="quick-icon blue">◷</span><b>Check-out & bill</b><small>Close a parking ticket</small></a><a href="{{url_for('reservations')}}"><span class="quick-icon violet">▣</span><b>Reservations</b><small>Manage future arrivals</small></a><a href="{{url_for('reports')}}"><span class="quick-icon gold">⌁</span><b>Analytics</b><small>Review usage and revenue</small></a></div></section>
+</div>
+<div class="panel table-panel"><div class="panel-head"><div><h3>Vehicles currently parked</h3><p>Most recent active parking tickets</p></div><a class="text-link" href="{{url_for('sessions')}}">All sessions ↗</a></div>
+<div class="table-wrap"><table><thead><tr><th>VEHICLE</th><th>TYPE</th><th>SLOT</th><th>OWNER</th><th>ENTRY TIME</th><th>STATUS</th></tr></thead><tbody>
+{% for s in sessions %}<tr><td><b>{{s.plate_no}}</b><small class="sub-cell">Ticket #{{s.ticket_id}}</small></td><td><span class="type-chip">{{s.vehicle_type}}</span></td><td><span class="slot-chip">{{s.slot_no}}</span></td><td>{{s.owner_name}}</td><td>{{s.entry_time|replace('T',' ')}}</td><td><span class="badge green">● Active</span></td></tr>{% else %}<tr><td colspan="6" class="empty">No active vehicles.</td></tr>{% endfor %}
+</tbody></table></div></div>
+{% endblock %}

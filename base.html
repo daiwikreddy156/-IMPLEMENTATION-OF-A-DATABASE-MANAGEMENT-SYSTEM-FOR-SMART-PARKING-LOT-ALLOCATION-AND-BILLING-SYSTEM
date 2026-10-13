@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% block title %}ParkIQ{% endblock %} · Smart Parking</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<div class="app-shell">
+<aside class="sidebar">
+  <a class="brand" href="{{ url_for('dashboard') }}"><span class="brand-icon">P</span><span><b>ParkIQ</b><small>SMART PARKING</small></span></a>
+  <div class="nav-label">WORKSPACE</div>
+  <nav>
+    {% for endpoint,label,icon in [('dashboard','Dashboard','▦'),('slots','Parking slots','▤'),('entry','Vehicle check-in','＋'),('sessions','Active sessions','◷'),('reservations','Reservations','▣'),('billing','Billing & payments','₹'),('vehicles','Vehicles','♧'),('reports','Reports & analytics','⌁'),('settings','Tariffs & settings','⚙')] %}
+    <a class="nav-link {% if active==endpoint %}active{% endif %}" href="{{ url_for(endpoint) }}"><span class="nav-icon">{{icon}}</span>{{label}}</a>
+    {% endfor %}
+  </nav>
+  <div class="sidebar-bottom"><div class="status-dot"></div><div><b>System operational</b><small>Local database connected</small></div></div>
+</aside>
+<main class="main">
+<header class="topbar"><div><span class="eyebrow">PARKIQ CONTROL CENTER</span><h1>{% block page_title %}Dashboard{% endblock %}</h1></div><div class="top-actions"><span class="live-pill"><i></i> LIVE DEMO</span><div class="avatar">AD</div></div></header>
+<div class="content">
+{% with messages = get_flashed_messages(with_categories=true) %}{% if messages %}{% for category,message in messages %}<div class="flash {{category}}">{{message}}<button onclick="this.parentElement.remove()">×</button></div>{% endfor %}{% endif %}{% endwith %}
+{% block content %}{% endblock %}
+<footer>ParkIQ · Database Management System Project <span>Smart allocation · Reliable billing · Auditable records</span></footer>
+</div>
+</main>
+</div>
+<script>
+document.querySelectorAll('[data-confirm]').forEach(el=>el.addEventListener('click',e=>{if(!confirm(el.dataset.confirm))e.preventDefault()}));
+</script>
+</body></html>
