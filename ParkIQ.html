@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ParkIQ</title>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@75..125,400..800&display=swap" rel="stylesheet">
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+--bg:#e6e9ee;--panel:#fff;--ink:#17202e;--mute:#5d6878;--line:#c9d0da;--paint:#f2b705;--free:#0b7f80;--busy:#17202e;--busyink:#f2b705;--hold:#8a5a00;--bad:#b3261e;--ok:#1b7a3e;color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#10151d;--panel:#192130;--ink:#eef1f6;--mute:#9aa6b8;--line:#2e3a4d;--free:#3cc6c7;--busy:#f2b705;--busyink:#17202e;--hold:#e5b04a;--bad:#ff8a80;--ok:#6fd592;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#10151d;--panel:#192130;--ink:#eef1f6;--mute:#9aa6b8;--line:#2e3a4d;--free:#3cc6c7;--busy:#f2b705;--busyink:#17202e;--hold:#e5b04a;--bad:#ff8a80;--ok:#6fd592;color-scheme:dark}
+*{box-sizing:border-box}html,body{height:auto}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 Archivo,system-ui,sans-serif}
+header{display:flex;flex-wrap:wrap;gap:12px 20px;align-items:center;padding:14px 20px;background:var(--panel);border-bottom:4px solid var(--paint)}
+.brand{font-size:26px;font-weight:800;font-stretch:112%;letter-spacing:-.5px}.brand span{background:var(--paint);color:#17202e;padding:0 7px;border-radius:3px;margin-left:2px}
+.ctl{display:flex;gap:8px;align-items:center;margin-left:auto;flex-wrap:wrap}
+label{font-size:13px;color:var(--mute)}
+input,select,button{font:inherit;color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:7px 9px}
+button{cursor:pointer;font-weight:600}button.pri{background:var(--paint);border-color:var(--paint);color:#17202e}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid var(--free);outline-offset:1px}
+nav{display:flex;gap:4px;padding:10px 20px 0;overflow-x:auto}
+nav button{border-radius:6px 6px 0 0;border-bottom:0;background:transparent;color:var(--mute)}
+nav button.on{background:var(--panel);color:var(--ink);box-shadow:inset 0 3px 0 var(--paint)}
+main{padding:0 20px 28px}.sheet{background:var(--panel);padding:18px;border-radius:0 8px 8px 8px}
+.msg{margin:0 0 14px;padding:10px 12px;border-left:5px solid var(--ok);background:var(--bg);white-space:pre-line}.msg.bad{border-color:var(--bad)}
+.lot{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:22px}
+@media(max-width:860px){.lot{grid-template-columns:1fr}}
+.stats{display:flex;gap:18px;flex-wrap:wrap;margin-bottom:14px}.stats b{font-size:22px;font-stretch:112%}
+.floor{margin-bottom:16px}.floor h3{margin:0 0 6px;font-size:14px;color:var(--mute);font-weight:600}
+.bays{display:flex;flex-wrap:wrap;gap:0;background:#2a3342;padding:14px 10px 10px;border-radius:6px}
+.bay{width:92px;height:108px;border:3px solid #fff;border-bottom:0;margin-left:-3px;padding:6px;display:flex;flex-direction:column;justify-content:space-between;font-size:12px;color:#fff}
+.bay:first-child{margin-left:0}.bay b{font-size:15px;font-stretch:112%}
+.bay.AVAILABLE{background:transparent}.bay.AVAILABLE i{color:#7fe3e4;font-style:normal}
+.bay.OCCUPIED{background:var(--paint);color:#17202e}
+.bay.RESERVED{background:repeating-linear-gradient(135deg,#2a3342 0 8px,#5a4a12 8px 16px)}
+.card{border:1px solid var(--line);border-radius:8px;padding:12px;margin-bottom:12px}.card h3{margin:0 0 8px;font-size:15px}
+.card .row{display:flex;gap:6px;margin-bottom:6px;flex-wrap:wrap}.card .row>*{flex:1;min-width:90px}
+.scroll{overflow-x:auto;max-width:100%}table{border-collapse:collapse;width:100%;font-size:13px}
+th,td{text-align:left;padding:6px 9px;border-bottom:1px solid var(--line);white-space:nowrap}th{color:var(--mute);font-weight:600}
+td input{width:84px;padding:4px 6px}
+.bar{display:grid;grid-template-columns:90px 1fr 70px;gap:8px;align-items:center;margin:4px 0;font-size:13px}.bar i{display:block;height:14px;background:var(--paint);border-radius:2px}.bar b{text-align:right}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:22px}h2{margin:0 0 10px;font-size:18px}
+.pill{display:inline-block;padding:1px 8px;border-radius:99px;font-size:12px;font-weight:700}.pass{background:var(--ok);color:#fff}.fail{background:var(--bad);color:#17202e}
+.tabs2{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}.tabs2 button.on{background:var(--paint);color:#17202e;border-color:var(--paint)}
+.note{color:var(--mute);font-size:13px}
+</style></head><body>
+<header><div class="brand">Park<span>IQ</span></div>
+<div class="ctl"><label for="role">Role</label><select id="role" onchange="db.role=this.value;go()"><option>admin</option><option>attendant</option><option>auditor</option></select>
+<label for="clock">Lot clock</label><input id="clock" type="datetime-local" onchange="setClock(this.value)">
+<button onclick="adv(30)">+30 min</button><button onclick="adv(60)">+1 h</button><button onclick="adv(180)">+3 h</button></div></header>
+<nav id="nav"></nav><main><div class="sheet" id="view"></div></main>
+<script>
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const inr=n=>'₹'+(Math.round(n*100)/100);
+const fmt=t=>t?new Date(t).toLocaleString('en-IN',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit',hour12:false}):'—';
+const dur=m=>Math.floor(m/60)+'h '+Math.round(m%60)+'m';
+
+function newDB(now,cfg={}){
+ const db={now:new Date(now),role:'admin',locks:new Set(),n:{},t:{User:[],Vehicle:[],ParkingLot:[],ParkingSlot:[],Reservation:[],ParkingTicket:[],SlotSensorEvent:[],Tariff:[],Payment:[],Membership:[],Penalty:[],Staff:[],AuditLog:[]}};
+ const id=k=>db.n[k]=(db.n[k]||0)+1, T=db.t, ts=()=>+db.now;
+ const P={register:['admin','attendant'],enter:['admin','attendant'],exit:['admin','attendant'],reserve:['admin','attendant'],pass:['admin','attendant'],tariff:['admin'],payment_edit:['admin']};
+ const need=a=>{if(!P[a].includes(db.role))throw Error(`Denied: role "${db.role}" is not allowed to ${a.replace('_',' ')}`)};
+ const log=(action,tbl,rid,o,n)=>T.AuditLog.push({log_id:id('log'),actor:db.role,action,table_name:tbl,row_id:rid,old_value:o==null?'':JSON.stringify(o),new_value:n==null?'':JSON.stringify(n),logged_at:ts()});
+ const slot=i=>T.ParkingSlot.find(s=>s.slot_id===i), norm=p=>String(p||'').toUpperCase().replace(/\s/g,'');
+ const sensor=(s,e)=>T.SlotSensorEvent.push({event_id:id('ev'),slot_id:s.slot_id,event_type:e,event_time:ts()});
+ const sl=cfg.slots||[['CAR',1,3],['CAR',2,2],['BIKE',1,3],['EV',1,2]]; let d=0;
+ T.ParkingLot.push({lot_id:1,lot_name:'Main Lot',location:'Block A',total_slots:sl.reduce((a,x)=>a+x[2],0)});
+ sl.forEach(([ty,f,c])=>{for(let i=1;i<=c;i++)T.ParkingSlot.push({slot_id:id('slot'),lot_id:1,slot_no:ty[0]+f+'-'+i,slot_type:ty,floor_no:f,dist_to_entry:(d+=8),status:'AVAILABLE'})});
+ [['CAR',30,200],['BIKE',15,100],['EV',40,250]].forEach(([v,r,c])=>T.Tariff.push({tariff_id:id('tf'),vehicle_type:v,rate_per_hour:r,daily_cap:c,grace_min:15,peak_mult:1.5}));
+ [['daiwik','admin'],['gate1','attendant'],['audit1','auditor']].forEach(([u,r])=>T.Staff.push({staff_id:id('st'),username:u,role:r}));
+ const veh=p=>{const v=T.Vehicle.find(x=>x.plate_no===norm(p));if(!v)throw Error('Vehicle not registered: register it first');return v};
+ const openT=v=>T.ParkingTicket.find(t=>t.vehicle_id===v.vehicle_id&&!t.exit_time);
+ const expire=()=>T.Reservation.filter(r=>r.status==='HELD'&&r.expires_at<=ts()).forEach(r=>{r.status='EXPIRED';const s=slot(r.slot_id);s.status='AVAILABLE';sensor(s,'HOLD_EXPIRED')});
+ // SELECT ... FOR UPDATE SKIP LOCKED
+ db.begin=ty=>{const s=T.ParkingSlot.filter(s=>s.status==='AVAILABLE'&&s.slot_type===ty&&!db.locks.has(s.slot_id)).sort((a,b)=>a.floor_no-b.floor_no||a.dist_to_entry-b.dist_to_entry)[0];if(s)db.locks.add(s.slot_id);return s||null};
+ db.rollback=s=>db.locks.delete(s.slot_id);
+ db.commit=(s,v,res)=>{db.locks.delete(s.slot_id);s.status='OCCUPIED';sensor(s,'OCCUPIED');
+  const t={ticket_id:id('tk'),vehicle_id:v.vehicle_id,slot_id:s.slot_id,reservation_id:res?res.reservation_id:null,entry_time:ts(),exit_time:null,status:'OPEN'};T.ParkingTicket.push(t);log('INSERT','ParkingTicket',t.ticket_id,null,{slot:s.slot_no});return t};
+ db.register=({plate,type,owner,phone,pass})=>{need('register');plate=norm(plate);
+  if(!/^[A-Z0-9]{4,12}$/.test(plate))throw Error('Plate must be 4-12 letters or digits');
+  if(T.Vehicle.some(v=>v.plate_no===plate))throw Error('Plate already registered');
+  if(!owner||!phone)throw Error('Owner name and phone are required');
+  const u={user_id:id('u'),full_name:owner,phone,email:''};T.User.push(u);
+  const v={vehicle_id:id('v'),user_id:u.user_id,plate_no:plate,vehicle_type:type};T.Vehicle.push(v);
+  if(pass){need('pass');T.Membership.push({membership_id:id('m'),vehicle_id:v.vehicle_id,valid_from:ts(),valid_to:ts()+30*864e5,discount_pct:20})}
+  log('INSERT','Vehicle',v.vehicle_id,null,{plate});return v};
+ db.reserve=plate=>{need('reserve');expire();const v=veh(plate);
+  if(openT(v))throw Error('Vehicle is already parked');
+  if(T.Reservation.some(r=>r.vehicle_id===v.vehicle_id&&r.status==='HELD'))throw Error('Vehicle already holds a reservation');
+  const s=db.begin(v.vehicle_type);if(!s)throw Error('LOT FULL: no free '+v.vehicle_type+' slot');db.rollback(s);s.status='RESERVED';
+  const r={reservation_id:id('r'),vehicle_id:v.vehicle_id,slot_id:s.slot_id,reserved_from:ts(),expires_at:ts()+15*60000,status:'HELD'};T.Reservation.push(r);sensor(s,'RESERVED');log('INSERT','Reservation',r.reservation_id,null,{slot:s.slot_no});return {r,s}};
+ db.enter=plate=>{need('enter');expire();const v=veh(plate);
+  if(openT(v))throw Error('Vehicle already has an open ticket (trigger trg_ticket_before_insert)');
+  const res=T.Reservation.find(r=>r.vehicle_id===v.vehicle_id&&r.status==='HELD');let s;
+  if(res){s=slot(res.slot_id);res.status='CLAIMED'}else{s=db.begin(v.vehicle_type);if(!s)throw Error('LOT FULL: no free '+v.vehicle_type+' slot')}
+  return {t:db.commit(s,v,res),s}};
+ db.quote=(t,at)=>{const v=T.Vehicle.find(x=>x.vehicle_id===t.vehicle_id),tf=T.Tariff.find(x=>x.vehicle_type===v.vehicle_type);
+  const mins=(at-t.entry_time)/60000,bill=Math.ceil(Math.max(0,mins-tf.grace_min)/60);
+  const base=Math.min(bill*tf.rate_per_hour,tf.daily_cap*Math.ceil(Math.max(mins,1)/1440));
+  const h=new Date(at).getHours(),peak=bill>0&&((h>=8&&h<11)||(h>=17&&h<20)),mult=peak?tf.peak_mult:1;
+  const m=T.Membership.find(x=>x.vehicle_id===v.vehicle_id&&x.valid_to>=at),sub=base*mult,disc=m?sub*m.discount_pct/100:0;
+  const pen=(m||t.reservation_id)&&mins>720?100:0;
+  return {mins,bill,base,peak,mult,disc,pen,tf,m,total:Math.round(sub-disc)+pen}};
+ db.exit=(plate,mode)=>{need('exit');const v=veh(plate),t=openT(v);if(!t)throw Error('No open ticket for this vehicle');
+  if(ts()<=t.entry_time)throw Error('Rejected by CHECK (exit_time > entry_time)');
+  const q=db.quote(t,ts());t.exit_time=ts();t.status='CLOSED';
+  if(q.pen)T.Penalty.push({penalty_id:id('pn'),ticket_id:t.ticket_id,amount:q.pen,reason:'Overstay beyond 12 hours'});
+  const p={payment_id:id('p'),ticket_id:t.ticket_id,tariff_id:q.tf.tariff_id,amount:q.total,pay_mode:mode,paid_at:ts()};T.Payment.push(p);
+  const s=slot(t.slot_id);s.status='AVAILABLE';sensor(s,'FREED');log('INSERT','Payment',p.payment_id,null,{amount:p.amount});return {q,p,s}};
+ db.setTariff=(ty,f,val)=>{need('tariff');const tf=T.Tariff.find(x=>x.vehicle_type===ty),o={[f]:tf[f]};val=Number(val);if(!(val>=0))throw Error('Enter a number of 0 or more');tf[f]=val;log('UPDATE','Tariff',tf.tariff_id,o,{[f]:val})};
+ db.setPayment=(pid,val)=>{need('payment_edit');const p=T.Payment.find(x=>x.payment_id===pid);val=Number(val);if(!(val>=0))throw Error('Enter a number of 0 or more');const o={amount:p.amount};p.amount=val;log('UPDATE','Payment',pid,o,{amount:val})};
+ db.parked=()=>T.ParkingTicket.filter(t=>!t.exit_time).map(t=>({t,v:T.Vehicle.find(v=>v.vehicle_id===t.vehicle_id),s:slot(t.slot_id)}));
+ db.plateOf=sid=>{const t=T.ParkingTicket.find(t=>t.slot_id===sid&&!t.exit_time);return t?T.Vehicle.find(v=>v.vehicle_id===t.vehicle_id).plate_no:''};
+ return db}
+
+function seed(){const D=newDB(new Date(2026,9,10,9,0));
+ const mk=(p,t,o,ph,pass)=>D.register({plate:p,type:t,owner:o,phone:ph,pass});
+ mk('TS09AB1234','CAR','Ravi Kumar','9000000001',true);mk('TS10CD5678','CAR','Anita Rao','9000000002');mk('AP28EF9012','BIKE','Imran Shaikh','9000000003');
+ mk('TS08GH3456','EV','Meera Nair','9000000004',true);mk('KA01JK7788','CAR','Sunil Verma','9000000005');mk('TS07MN4321','BIKE','Priya Das','9000000006');
+ [['TS09AB1234',0,8,160],['TS10CD5678',0,9,95],['AP28EF9012',0,12,50],['TS08GH3456',1,17,130],['KA01JK7788',1,10,300],['TS07MN4321',1,18,70],['TS10CD5678',2,9,40],['TS09AB1234',2,13,200],['KA01JK7788',2,17,90]]
+ .forEach(([p,dd,h,m],i)=>{D.now=new Date(2026,9,10+dd,h,i);D.enter(p);D.now=new Date(+D.now+m*60000);D.exit(p,['UPI','CASH','CARD'][i%3])});
+ D.now=new Date(2026,9,14,11,30);D.enter('AP28EF9012');D.now=new Date(2026,9,14,12,0);D.enter('TS08GH3456');D.role='admin';return D}
+
+let db=seed(),tab='Lot',msg=null,tsel='Vehicle',testRes=null;
+const TABS=['Lot','Billing','Reports','Database','Tests'];
+function act(f){try{msg=f()}catch(e){msg={bad:1,t:e.message}}go()}
+const $=i=>document.getElementById(i).value;
+function setClock(v){const d=new Date(v);if(!isNaN(d)){db.now=d;go()}}
+function adv(m){db.now=new Date(+db.now+m*60000);go()}
+function doReg(){act(()=>{const v=db.register({plate:$('rp'),type:$('rt'),owner:$('ro'),phone:$('rh'),pass:document.getElementById('rm').checked});return {t:'Registered '+v.plate_no+' ('+v.vehicle_type+')'}})}
+function doEnter(){act(()=>{const r=db.enter($('ep'));return {t:`Ticket #${r.t.ticket_id} issued: go to slot ${r.s.slot_no} (floor ${r.s.floor_no})`}})}
+function doRes(){act(()=>{const r=db.reserve($('vp'));return {t:`Slot ${r.s.slot_no} held for 15 minutes (until ${fmt(r.r.expires_at)})`}})}
+function doExit(){act(()=>{const r=db.exit($('xp'),$('xm'));const q=r.q;
+ return {t:`Paid ${inr(r.p.amount)} by ${r.p.pay_mode}. Slot ${r.s.slot_no} is free.\nStay ${dur(q.mins)}: ${q.bill} billable h × ${inr(q.tf.rate_per_hour)} = ${inr(q.base)}${q.peak?`, peak ×${q.mult}`:''}${q.disc?`, pass discount −${inr(q.disc)}`:''}${q.pen?`, overstay penalty +${inr(q.pen)}`:''}`}})}
+function doTariff(ty,f,v){act(()=>{db.setTariff(ty,f,v);return {t:`Tariff updated: ${ty} ${f} = ${v}`}})}
+function doPay(id,v){act(()=>{db.setPayment(id,v);return {t:`Payment #${id} corrected; change written to AuditLog`}})}
+
+const bars=(rows,fmtv=x=>x)=>{const mx=Math.max(1,...rows.map(r=>r[1]));return rows.length?rows.map(([l,v])=>`<div class="bar"><span>${esc(l)}</span><i style="width:${v/mx*100}%"></i><b>${fmtv(v)}</b></div>`).join(''):'<p class="note">No data yet.</p>'};
+function table(rows,cols){if(!rows.length)return '<p class="note">No rows.</p>';
+ return `<div class="scroll"><table><thead><tr>${cols.map(c=>`<th>${c}</th>`).join('')}</tr></thead><tbody>${rows.map(r=>`<tr>${cols.map(c=>{let v=r[c];if(typeof v==='number'&&v>1e12)v=fmt(v);return `<td>${esc(v)}</td>`}).join('')}</tr>`).join('')}</tbody></table></div>`}
+
+function vLot(){const S=db.t.ParkingSlot,types=['CAR','BIKE','EV'],floors=[...new Set(S.map(s=>s.floor_no))].sort();
+ const free=t=>S.filter(s=>s.slot_type===t&&s.status==='AVAILABLE').length,all=t=>S.filter(s=>s.slot_type===t).length;
+ const parked=db.parked(),reg=db.t.Vehicle,pk=new Set(parked.map(p=>p.v.vehicle_id));
+ const opt=a=>a.map(v=>`<option>${esc(v.plate_no)}</option>`).join('');
+ return `<div class="lot"><div>
+ <div class="stats">${types.map(t=>`<div><b>${free(t)}/${all(t)}</b><br><span class="note">${t} free</span></div>`).join('')}<div><b>${parked.length}</b><br><span class="note">parked now</span></div></div>
+ ${floors.map(f=>`<div class="floor"><h3>Floor ${f}</h3><div class="bays">${S.filter(s=>s.floor_no===f).map(s=>`<div class="bay ${s.status}"><b>${s.slot_no}</b><span>${s.status==='OCCUPIED'?esc(db.plateOf(s.slot_id)):s.status==='RESERVED'?'Held':'<i>Free</i>'}</span></div>`).join('')}</div></div>`).join('')}
+ <p class="note">Entry picks the free slot of the vehicle's type with the lowest floor and shortest distance to the gate. Held slots return to free after 15 minutes; move the lot clock to see it.</p></div>
+ <div>
+ <div class="card"><h3>Register vehicle</h3><div class="row"><input id="rp" placeholder="Plate, e.g. TS09XY1234" aria-label="Plate"><select id="rt" aria-label="Type"><option>CAR</option><option>BIKE</option><option>EV</option></select></div>
+ <div class="row"><input id="ro" placeholder="Owner name" aria-label="Owner"><input id="rh" placeholder="Phone" aria-label="Phone"></div>
+ <label><input id="rm" type="checkbox"> Monthly pass (20% off)</label> <button class="pri" onclick="doReg()">Register</button></div>
+ <div class="card"><h3>Vehicle entry</h3><div class="row"><select id="ep" aria-label="Plate">${opt(reg.filter(v=>!pk.has(v.vehicle_id)))}</select><button class="pri" onclick="doEnter()">Allocate slot</button></div></div>
+ <div class="card"><h3>Reserve a slot</h3><div class="row"><select id="vp" aria-label="Plate">${opt(reg.filter(v=>!pk.has(v.vehicle_id)))}</select><button onclick="doRes()">Hold 15 min</button></div></div>
+ <div class="card"><h3>Exit and pay</h3><div class="row"><select id="xp" aria-label="Plate">${opt(parked.map(p=>p.v))}</select><select id="xm" aria-label="Pay mode"><option>UPI</option><option>CASH</option><option>CARD</option></select></div><button class="pri" onclick="doExit()">Close ticket</button></div>
+ </div></div>`}
+
+function vBill(){const T=db.t,pay=[...T.Payment].reverse().slice(0,12);
+ return `<h2>Tariffs</h2><p class="note">Rates live in the Tariff table; only admin can change them and every change is audited. Peak hours: 08:00–10:59 and 17:00–19:59, by exit time.</p>
+ <div class="scroll"><table><thead><tr><th>Type</th><th>Rate / hour</th><th>Daily cap</th><th>Grace (min)</th><th>Peak ×</th></tr></thead><tbody>
+ ${T.Tariff.map(t=>`<tr><td>${t.vehicle_type}</td>${['rate_per_hour','daily_cap','grace_min','peak_mult'].map(f=>`<td><input type="number" step="any" min="0" value="${t[f]}" aria-label="${t.vehicle_type} ${f}" onchange="doTariff('${t.vehicle_type}','${f}',this.value)"></td>`).join('')}</tr>`).join('')}</tbody></table></div>
+ <h2 style="margin-top:20px">Open sessions: fee if closed now</h2>
+ ${table(db.parked().map(p=>{const q=db.quote(p.t,+db.now);return {plate:p.v.plate_no,slot:p.s.slot_no,since:p.t.entry_time,stay:dur(q.mins),'billable h':q.bill,'fee now':inr(q.total)}}),['plate','slot','since','stay','billable h','fee now'])}
+ <h2 style="margin-top:20px">Recent payments</h2>
+ <div class="scroll"><table><thead><tr><th>#</th><th>Ticket</th><th>Amount</th><th>Mode</th><th>Paid at</th></tr></thead><tbody>${pay.map(p=>`<tr><td>${p.payment_id}</td><td>${p.ticket_id}</td><td><input type="number" min="0" value="${p.amount}" aria-label="Payment ${p.payment_id} amount" onchange="doPay(${p.payment_id},this.value)"></td><td>${p.pay_mode}</td><td>${fmt(p.paid_at)}</td></tr>`).join('')}</tbody></table></div>`}
+
+function vRep(){const T=db.t,by=(a,k)=>a.reduce((m,x)=>(m[k(x)]=(m[k(x)]||0)+1,m),{}),closed=T.ParkingTicket.filter(t=>t.exit_time);
+ const rev={};T.Payment.forEach(p=>{const k=new Date(p.paid_at).toLocaleDateString('en-IN',{day:'2-digit',month:'short'});rev[k]=(rev[k]||0)+p.amount});
+ const hrs=by(T.ParkingTicket,t=>new Date(t.entry_time).getHours());
+ const typ=by(T.ParkingTicket,t=>T.ParkingSlot.find(s=>s.slot_id===t.slot_id).slot_type);
+ const avg={};closed.forEach(t=>{const ty=T.Vehicle.find(v=>v.vehicle_id===t.vehicle_id).vehicle_type;(avg[ty]=avg[ty]||[]).push((t.exit_time-t.entry_time)/60000)});
+ return `<div class="grid2"><div><h2>Daily revenue</h2>${bars(Object.entries(rev),inr)}</div>
+ <div><h2>Peak-hour entries</h2>${bars(Object.entries(hrs).sort((a,b)=>a[0]-b[0]).map(([h,c])=>[String(h).padStart(2,'0')+':00',c]))}</div>
+ <div><h2>Average stay</h2>${bars(Object.entries(avg).map(([k,a])=>[k,Math.round(a.reduce((x,y)=>x+y,0)/a.length)]),m=>dur(m))}</div>
+ <div><h2>Most-used slot types</h2>${bars(Object.entries(typ))}</div></div>`}
+
+function vDb(){const T=db.t,views={vw_available_slots:()=>{const o={};T.ParkingSlot.filter(s=>s.status==='AVAILABLE').forEach(s=>o[s.slot_type]=(o[s.slot_type]||0)+1);return Object.entries(o).map(([k,v])=>({slot_type:k,free_slots:v}))},
+  vw_active_sessions:()=>db.parked().map(p=>({plate_no:p.v.plate_no,slot_no:p.s.slot_no,entry_time:p.t.entry_time})),
+  vw_daily_revenue:()=>{const o={};T.Payment.forEach(p=>{const k=new Date(p.paid_at).toLocaleDateString('en-IN');o[k]=(o[k]||0)+p.amount});return Object.entries(o).map(([day,revenue])=>({day,revenue}))}};
+ const rows=views[tsel]?views[tsel]():[...T[tsel]].reverse().slice(0,60),cols=rows.length?Object.keys(rows[0]):[];
+ return `<p class="note">The 13 tables and 3 of the 5 reporting views, as stored by the engine. The same design ships as <b>parkiq_schema.sql</b> for MySQL 8.</p>
+ <div class="tabs2">${Object.keys(T).map(k=>`<button class="${k===tsel?'on':''}" onclick="tsel='${k}';go()">${k} (${T[k].length})</button>`).join('')}${Object.keys(views).map(k=>`<button class="${k===tsel?'on':''}" onclick="tsel='${k}';go()">${k}</button>`).join('')}</div>${table(rows,cols)}`}
+
+const TESTS=[
+ ['T1','Two entries at once, one free slot','One ticket issued; the other gets LOT FULL',()=>{const d=newDB(0,{slots:[['CAR',1,1]]});d.register({plate:'AAAA1',type:'CAR',owner:'a',phone:'1'});d.register({plate:'BBBB2',type:'CAR',owner:'b',phone:'2'});
+  const a=d.begin('CAR'),b=d.begin('CAR');if(a)d.commit(a,d.t.Vehicle[0]);return !!a&&!b&&d.t.ParkingTicket.length===1}],
+ ['T2','Reservation not claimed in time','Hold expires; slot returns to AVAILABLE',()=>{const d=newDB(0,{slots:[['CAR',1,1]]});d.register({plate:'AAAA1',type:'CAR',owner:'a',phone:'1'});d.register({plate:'BBBB2',type:'CAR',owner:'b',phone:'2'});
+  d.reserve('AAAA1');let held=d.t.ParkingSlot[0].status==='RESERVED';d.now=new Date(+d.now+16*60000);d.enter('BBBB2');return held&&d.t.Reservation[0].status==='EXPIRED'&&d.t.ParkingTicket[0].vehicle_id===2}],
+ ['T3','Exit during peak hours','Fee uses the peak multiplier (3 h × 30 × 1.5 = 135)',()=>{const d=newDB(new Date(2026,9,14,7,0));d.register({plate:'AAAA1',type:'CAR',owner:'a',phone:'1'});d.enter('AAAA1');d.now=new Date(2026,9,14,9,30);return d.exit('AAAA1','UPI').p.amount===135}],
+ ['T4','Member exits','Pass discount applied (3 h × 30 = 90, less 20% = 72)',()=>{const d=newDB(new Date(2026,9,14,12,0));d.register({plate:'AAAA1',type:'CAR',owner:'a',phone:'1',pass:true});d.enter('AAAA1');d.now=new Date(2026,9,14,14,40);return d.exit('AAAA1','UPI').p.amount===72}],
+ ['T5','Attendant edits a tariff','Denied by role permissions',()=>{const d=newDB(0);d.role='attendant';try{d.setTariff('CAR','rate_per_hour',99);return false}catch(e){return /Denied/.test(e.message)&&d.t.Tariff[0].rate_per_hour===30}}],
+ ['T6','A payment row is updated','Change is recorded in AuditLog',()=>{const d=newDB(new Date(2026,9,14,12,0));d.register({plate:'AAAA1',type:'CAR',owner:'a',phone:'1'});d.enter('AAAA1');d.now=new Date(2026,9,14,14,0);d.exit('AAAA1','CASH');d.setPayment(1,10);return d.t.AuditLog.some(l=>l.action==='UPDATE'&&l.table_name==='Payment')}],
+ ['T7','Exit within the grace period','Fee is ₹0',()=>{const d=newDB(new Date(2026,9,14,12,0));d.register({plate:'AAAA1',type:'CAR',owner:'a',phone:'1'});d.enter('AAAA1');d.now=new Date(2026,9,14,12,10);return d.exit('AAAA1','CASH').p.amount===0}],
+ ['T8','Long stay above the daily cap','Fee limited to the daily cap (₹200)',()=>{const d=newDB(new Date(2026,9,14,11,0));d.register({plate:'AAAA1',type:'CAR',owner:'a',phone:'1'});d.enter('AAAA1');d.now=new Date(2026,9,14,21,0);return d.exit('AAAA1','CASH').p.amount===200}]];
+function runTests(){testRes=TESTS.map(([id,sc,ex,f])=>{let ok=false;try{ok=f()}catch(e){ok=false}return {id,sc,ex,ok}});go()}
+function vTests(){return `<p class="note">Each test builds a fresh database, runs the scenario and checks the result. T1–T6 are from the final review; T7–T8 are carried over from review 2.</p><button class="pri" onclick="runTests()">Run all tests</button>
+ ${testRes?`<div class="scroll" style="margin-top:12px"><table><thead><tr><th>ID</th><th>Scenario</th><th>Expected</th><th>Result</th></tr></thead><tbody>${testRes.map(r=>`<tr><td>${r.id}</td><td>${r.sc}</td><td>${r.ex}</td><td><span class="pill ${r.ok?'pass':'fail'}">${r.ok?'Pass':'Fail'}</span></td></tr>`).join('')}</tbody></table></div>`:''}`}
+
+function go(){const V={Lot:vLot,Billing:vBill,Reports:vRep,Database:vDb,Tests:vTests};
+ document.getElementById('nav').innerHTML=TABS.map(t=>`<button class="${t===tab?'on':''}" onclick="tab='${t}';msg=null;go()">${t}</button>`).join('');
+ document.getElementById('role').value=db.role;const c=new Date(db.now-db.now.getTimezoneOffset()*6e4).toISOString().slice(0,16);document.getElementById('clock').value=c;
+ const aud=db.role==='auditor'?'<p class="msg bad">Auditor role is read-only: forms will be denied.</p>':'';
+ document.getElementById('view').innerHTML=(msg?`<p class="msg ${msg.bad?'bad':''}" role="status">${esc(msg.t)}</p>`:'')+aud+V[tab]()}
+go();
+</script></body></html>
